@@ -1,0 +1,66 @@
+#Importing libraries
+import RPi.GPIO as GPIO
+import time
+from time import sleep
+GPIO.setwarnings(False)
+
+GPIO.setmode(GPIO.BOARD)
+
+#setting pins
+LED = 33
+TRIG = 11
+ECHO = 7
+
+#setting GPIO direction
+GPIO.setup(TRIG, GPIO.OUT)
+GPIO.setup(ECHO, GPIO.IN)
+GPIO.setup(LED, GPIO.OUT)
+
+GPIO.output(TRIG, 0)
+time.sleep(0.1)
+
+pwm = GPIO.PWM(33, 100)
+pwm.start(0)
+
+#distance function
+def distance(pwm,TRIG,ECHO,):
+   
+    GPIO.output(TRIG, 1) #setting trigger to High
+    time.sleep(0.00001) #set the trigger to 0.1ms
+    GPIO.output(TRIG, 0)
+    
+    StartTime = time.time()
+    StopTime = time.time()
+    
+    Max = 100
+    Min = 0
+    
+    while GPIO.input(ECHO) == 0:
+        StartTime = time.time() #start time
+        
+    while GPIO.input(ECHO) == 1:
+        StopTime = time.time()
+        
+    TimeElapsed = StopTime - StartTime
+    distance = ((TimeElapsed * 34300) / 2)
+    
+    if distance < 20:
+        pwm.ChangeDutyCycle((20-distance)*5)
+    elif (distance > 20) and (distance < 100):
+        pwm.ChangeDutyCycle(100-distance)
+        
+    if distance <= Max:
+        return distance
+    else:
+        return Max
+    
+if _name_ == '_main_':
+        try:
+            while True:
+                dist = distance(pwm, TRIG, ECHO)
+                print ("Measured Distance = %.1f cm" % dist)
+                time.sleep(0.5)
+                
+        except KeyboardInterrupt:
+            print("Measurement stopped by Garima Roy")
+            GPIO.cleanup()
